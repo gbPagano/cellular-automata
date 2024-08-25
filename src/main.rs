@@ -1,10 +1,14 @@
 use bevy::prelude::*;
-use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
+use crate::camera::CameraPlugin;
+
+mod rule;
+mod cell;
+mod camera;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(PanOrbitCameraPlugin)
+        .add_plugins(CameraPlugin)
         .add_systems(Startup, setup)
         .run();
 }
@@ -30,15 +34,4 @@ fn setup(
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..default()
     });
-    // camera
-    commands.spawn((
-        Camera3dBundle {
-            transform: Transform::from_xyz(-2.5, 4.5, 9.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-        },
-        PanOrbitCamera {
-            pan_sensitivity: 0.0,
-            ..default()
-        },
-    ));
 }

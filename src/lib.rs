@@ -1,2 +1,0 @@
-mod rule;
-mod cell;
