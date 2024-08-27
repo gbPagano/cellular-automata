@@ -35,7 +35,7 @@ impl Rule {
     }
 
     pub fn apply_dying_rule(&self, state: u8) -> CellState {
-        if state == 0 {
+        if state == 1 {
             CellState::Empty
         } else {
             CellState::Dying(state - 1)
