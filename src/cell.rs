@@ -1,15 +1,32 @@
 use crate::rule::*;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Cell {
-    color: Color,
-    state: CellState,
-    next_state: CellState,
+    pub state: CellState,
+    pub next_state: Option<CellState>,
 }
 
-type Color = (u8, u8, u8);
+impl Cell {
+    fn new_alive() -> Self {
+        Self {
+            state: CellState::Alive,
+            next_state: None,
+        }
+    }
+}
+impl Default for Cell {
+    fn default() -> Self {
+        Self {
+            state: CellState::Empty,
+            next_state: None,
+        }
+    }
+}
 
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CellState {
     Empty,
     Alive,
-    Dying(u16),
+    Dying(u8),
 }
