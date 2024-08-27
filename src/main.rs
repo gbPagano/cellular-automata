@@ -4,6 +4,7 @@ use crate::camera::CameraPlugin;
 mod rule;
 mod cell;
 mod camera;
+mod automaton_grid;
 
 fn main() {
     App::new()
