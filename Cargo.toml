@@ -6,9 +6,11 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.14.1", features = ["dynamic_linking"] }
 bevy_panorbit_camera = "0.19.2"
+bytemuck = "1.17.0"
+rand = "0.8.5"
 
 [profile.dev]
-opt-level = 1
+opt-level = 0
 
 [profile.dev.package."*"]
 opt-level = 3
