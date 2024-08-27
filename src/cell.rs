@@ -7,7 +7,7 @@ pub struct Cell {
 }
 
 impl Cell {
-    fn new_alive() -> Self {
+    pub fn new_alive() -> Self {
         Self {
             state: CellState::Alive,
             next_state: None,
