@@ -29,7 +29,7 @@ impl AutomatonGrid {
         let center = self.center();
 
         // TODO: check this values
-        let amount = 6 * 6 * 6;
+        let amount = 12 * 12 * 12;
         let radius = 6;
 
         let mut rand = rand::thread_rng();
@@ -41,7 +41,7 @@ impl AutomatonGrid {
                     rand.gen_range(-radius..=radius),
                 );
             let index = self.pos_to_idx(self.wrap(pos));
-            self.cells[index].state = CellState::Alive;
+            self.cells[index] = Cell::new_alive();
         }
     }
 
@@ -51,7 +51,7 @@ impl AutomatonGrid {
         for dir in self.rule.get_neighbour_iter() {
             let neighbour_pos = self.wrap(pos + *dir);
             let neighbour_cell = &self.cells[self.pos_to_idx(neighbour_pos)];
-            if neighbour_cell.state != CellState::Empty {
+            if neighbour_cell.state == CellState::Alive {
                 neighbors += 1;
             }
         }
@@ -135,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn name() {
+    fn wrap() {
         let grid = AutomatonGrid::new(5, Rule::default());
 
         assert_eq!(grid.wrap(IVec3::new(-1, 1, 2)), IVec3::new(4, 1, 2));
