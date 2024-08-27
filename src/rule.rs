@@ -4,10 +4,10 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Rule {
-    survival_rule: Indexes,
-    birth_rule: Indexes,
-    states: u8,
-    neighbour_method: NeighbourMethod,
+    pub survival_rule: Indexes,
+    pub birth_rule: Indexes,
+    pub states: u8,
+    pub neighbour_method: NeighbourMethod,
 }
 impl Rule {
     pub fn get_neighbour_iter(&self) -> &'static [IVec3] {
@@ -24,7 +24,11 @@ impl Rule {
 
     pub fn apply_survival_rule(&self, neighbors: u8) -> CellState {
         if !self.survival_rule.has(neighbors) {
-            CellState::Dying(self.states)
+            // eg. if cells has 5 states
+            // empty -> state 0 
+            // dying -> state 1,2,3 
+            // alive -> state 4 
+            CellState::Dying(self.states - 2)
         } else {
             CellState::Alive
         }
@@ -41,10 +45,10 @@ impl Rule {
 impl Default for Rule {
     fn default() -> Self {
         Self {
-            survival_rule: Indexes::from_range(1..=3),
-            birth_rule: Indexes::from_range(1..=3),
-            states: 4,
-            neighbour_method: NeighbourMethod::VonNeumann,
+            survival_rule: Indexes::new(&[2, 6, 9]),
+            birth_rule: Indexes::new(&[4, 6, 8, 9, 10]),
+            states: 10,
+            neighbour_method: NeighbourMethod::Moore,
         }
     }
 }
@@ -67,7 +71,7 @@ impl Indexes {
         result
     }
     pub fn has(&self, idx: u8) -> bool {
-        assert!(idx < 26);
+        assert!(idx <= 26);
         self.0[idx as usize]
     }
 }
@@ -80,7 +84,7 @@ pub enum NeighbourMethod {
 impl NeighbourMethod {
     pub fn get_iter(&self) -> &'static [IVec3] {
         match self {
-            NeighbourMethod::Moore => &MOOSE_NEIGHBOURS[..],
+            NeighbourMethod::Moore => &MOORE_NEIGHBOURS[..],
             NeighbourMethod::VonNeumann => &VONNEUMAN_NEIGHBOURS[..],
         }
     }
@@ -88,38 +92,38 @@ impl NeighbourMethod {
 
 pub static VONNEUMAN_NEIGHBOURS: [IVec3; 6] = [
     IVec3::new(1, 0, 0),
-    IVec3::new(1, 0, 0),
+    IVec3::new(-1, 0, 0),
     IVec3::new(0, 1, 0),
     IVec3::new(0, -1, 0),
     IVec3::new(0, 0, -1),
     IVec3::new(0, 0, 1),
 ];
 
-pub static MOOSE_NEIGHBOURS: [IVec3; 26] = [
-    IVec3::new(1, -1, -1),
+pub static MOORE_NEIGHBOURS: [IVec3; 26] = [
+    IVec3::new(-1, -1, -1),
     IVec3::new(0, -1, -1),
     IVec3::new(1, -1, -1),
-    IVec3::new(1, 0, -1),
+    IVec3::new(-1, 0, -1),
     IVec3::new(0, 0, -1),
     IVec3::new(1, 0, -1),
-    IVec3::new(1, 1, -1),
+    IVec3::new(-1, 1, -1),
     IVec3::new(0, 1, -1),
     IVec3::new(1, 1, -1),
-    IVec3::new(1, -1, 0),
+    IVec3::new(-1, -1, 0),
     IVec3::new(0, -1, 0),
     IVec3::new(1, -1, 0),
+    IVec3::new(-1, 0, 0),
     IVec3::new(1, 0, 0),
-    IVec3::new(1, 0, 0),
-    IVec3::new(1, 1, 0),
+    IVec3::new(-1, 1, 0),
     IVec3::new(0, 1, 0),
     IVec3::new(1, 1, 0),
-    IVec3::new(1, -1, 1),
+    IVec3::new(-1, -1, 1),
     IVec3::new(0, -1, 1),
     IVec3::new(1, -1, 1),
-    IVec3::new(1, 0, 1),
+    IVec3::new(-1, 0, 1),
     IVec3::new(0, 0, 1),
     IVec3::new(1, 0, 1),
-    IVec3::new(1, 1, 1),
+    IVec3::new(-1, 1, 1),
     IVec3::new(0, 1, 1),
     IVec3::new(1, 1, 1),
 ];
@@ -135,6 +139,7 @@ mod tests {
         expected[1] = true;
         expected[2] = true;
         expected[3] = true;
+        expected[4] = false;
         expected[26] = true;
 
         assert_eq!(indexes.0, expected);
@@ -156,8 +161,9 @@ mod tests {
         let rule = Rule::default();
 
         assert_eq!(rule.apply_birth_rule(0), CellState::Empty);
-        assert_eq!(rule.apply_birth_rule(2), CellState::Alive);
-        assert_eq!(rule.apply_birth_rule(9), CellState::Empty);
+        assert_eq!(rule.apply_birth_rule(4), CellState::Alive);
+        assert_eq!(rule.apply_birth_rule(5), CellState::Empty);
+        assert_eq!(rule.apply_birth_rule(9), CellState::Alive);
     }
 
     #[test]
@@ -165,7 +171,7 @@ mod tests {
         let rule = Rule::default();
 
         assert_eq!(rule.apply_survival_rule(0), CellState::Dying(rule.states));
-        assert_eq!(rule.apply_survival_rule(3), CellState::Alive);
+        assert_eq!(rule.apply_survival_rule(2), CellState::Alive);
     }
 
     #[test]
