@@ -14,7 +14,35 @@ pub struct AutomatonGrid {
 impl AutomatonGrid {
     pub fn new(size: usize, rule: Rule) -> Self {
         let cells = vec![Cell::default(); size.pow(3) as usize];
-        Self { size, cells, rule }
+        let mut grid = Self { size, cells, rule };
+        // TODO: update this
+        grid.spawn_noise();
+        grid
+    }
+
+    pub fn center(&self) -> IVec3 {
+        let half_size = self.size as i32 / 2;
+        IVec3::new(half_size, half_size, half_size)
+    }
+
+    fn spawn_noise(&mut self) {
+        let center = self.center();
+
+        // TODO: check this values
+        let amount = 6 * 6 * 6;
+        let radius = 6;
+
+        let mut rand = rand::thread_rng();
+        for _ in 0..amount {
+            let pos = center
+                + IVec3::new(
+                    rand.gen_range(-radius..=radius),
+                    rand.gen_range(-radius..=radius),
+                    rand.gen_range(-radius..=radius),
+                );
+            let index = self.pos_to_idx(self.wrap(pos));
+            self.cells[index].state = CellState::Alive;
+        }
     }
 
     fn count_neighbors(&self, idx: usize) -> u8 {
@@ -59,7 +87,7 @@ impl AutomatonGrid {
         self.update_cells_state();
     }
 
-    fn idx_to_pos(&self, idx: usize) -> IVec3 {
+    pub fn idx_to_pos(&self, idx: usize) -> IVec3 {
         IVec3::new(
             (idx % self.size) as i32,
             (idx / self.size % self.size) as i32,
@@ -67,14 +95,14 @@ impl AutomatonGrid {
         )
     }
 
-    fn pos_to_idx(&self, pos: IVec3) -> usize {
+    pub fn pos_to_idx(&self, pos: IVec3) -> usize {
         let x = pos.x as usize;
         let y = pos.y as usize;
         let z = pos.z as usize;
         x + y * self.size + z * self.size * self.size
     }
 
-    fn wrap(&self, pos: IVec3) -> IVec3 {
+    pub fn wrap(&self, pos: IVec3) -> IVec3 {
         // this causes positions that would go outside the grid
         // to be considered as positions at the other end
         let bounds = self.size as i32;
