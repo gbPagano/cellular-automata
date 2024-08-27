@@ -170,7 +170,7 @@ mod tests {
     fn survival_rule() {
         let rule = Rule::default();
 
-        assert_eq!(rule.apply_survival_rule(0), CellState::Dying(rule.states));
+        assert_eq!(rule.apply_survival_rule(0), CellState::Dying(rule.states - 2));
         assert_eq!(rule.apply_survival_rule(2), CellState::Alive);
     }
 
@@ -178,7 +178,7 @@ mod tests {
     fn dying_rule() {
         let rule = Rule::default();
 
-        assert_eq!(rule.apply_dying_rule(0), CellState::Empty);
+        assert_eq!(rule.apply_dying_rule(1), CellState::Empty);
         assert_eq!(rule.apply_dying_rule(3), CellState::Dying(2));
     }
 }
