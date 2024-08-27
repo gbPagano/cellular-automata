@@ -1,6 +1,6 @@
 use crate::rule::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Cell {
     pub state: CellState,
     pub next_state: Option<CellState>,
@@ -22,7 +22,6 @@ impl Default for Cell {
         }
     }
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CellState {

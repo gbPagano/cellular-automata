@@ -2,6 +2,7 @@ use crate::cell::{Cell, CellState};
 use crate::rule::Rule;
 use bevy::math::IVec3;
 use bevy::prelude::*;
+use rand::Rng;
 
 #[derive(Resource, Debug)]
 pub struct AutomatonGrid {
@@ -21,7 +22,7 @@ impl AutomatonGrid {
         let mut neighbors = 0;
         for dir in self.rule.get_neighbour_iter() {
             let neighbour_pos = self.wrap(pos + *dir);
-            let neighbour_cell = self.cells[self.pos_to_idx(neighbour_pos)];
+            let neighbour_cell = &self.cells[self.pos_to_idx(neighbour_pos)];
             if neighbour_cell.state != CellState::Empty {
                 neighbors += 1;
             }
@@ -30,9 +31,8 @@ impl AutomatonGrid {
     }
 
     fn calculate_next_cells_state(&mut self) {
-        for idx in 0..self.size {
-            let mut cell = self.cells[idx];
-
+        for idx in 0..self.cells.len() {
+            let cell = &self.cells[idx];
             let next_state = match cell.state {
                 CellState::Empty => {
                     let neighbors = self.count_neighbors(idx);
@@ -44,8 +44,7 @@ impl AutomatonGrid {
                 }
                 CellState::Dying(state) => self.rule.apply_dying_rule(state),
             };
-
-            cell.next_state = Some(next_state);
+            self.cells[idx].next_state = Some(next_state);
         }
     }
 
