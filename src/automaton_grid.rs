@@ -41,50 +41,58 @@ impl AutomatonGrid {
                     rand.gen_range(-radius..=radius),
                 );
             let index = self.pos_to_idx(self.wrap(pos));
-            self.cells[index] = Cell::new_alive();
-        }
-    }
-
-    fn count_neighbors(&self, idx: usize) -> u8 {
-        let pos = self.idx_to_pos(idx);
-        let mut neighbors = 0;
-        for dir in self.rule.get_neighbour_iter() {
-            let neighbour_pos = self.wrap(pos + *dir);
-            let neighbour_cell = &self.cells[self.pos_to_idx(neighbour_pos)];
-            if neighbour_cell.state == CellState::Alive {
-                neighbors += 1;
+            if self.cells[index].state == CellState::Empty {
+                self.cells[index].state = CellState::Alive;
+                self.update_neighbours(index, true);
             }
         }
-        neighbors
     }
 
-    fn calculate_next_cells_state(&mut self) {
-        for idx in 0..self.cells.len() {
-            let cell = &self.cells[idx];
-            let next_state = match cell.state {
-                CellState::Empty => {
-                    let neighbors = self.count_neighbors(idx);
-                    self.rule.apply_birth_rule(neighbors)
-                }
-                CellState::Alive => {
-                    let neighbors = self.count_neighbors(idx);
-                    self.rule.apply_survival_rule(neighbors)
-                }
-                CellState::Dying(state) => self.rule.apply_dying_rule(state),
-            };
-            self.cells[idx].next_state = Some(next_state);
-        }
-    }
+    fn update_neighbours(&mut self, idx: usize, increase: bool) {
+        let pos = self.idx_to_pos(idx);
+        for dir in self.rule.get_neighbour_iter() {
+            let neighbour_pos = self.wrap(pos + *dir);
+            let neighbour_idx = self.pos_to_idx(neighbour_pos);
 
-    fn update_cells_state(&mut self) {
-        for cell in self.cells.iter_mut() {
-            cell.state = cell.next_state.take().unwrap();
+            let neighbour_cell = &mut self.cells[neighbour_idx];
+            if increase {
+                neighbour_cell.increase_neighbours();
+            } else {
+                neighbour_cell.decrease_neighbours();
+            }
         }
     }
 
     pub fn update(&mut self) {
-        self.calculate_next_cells_state();
-        self.update_cells_state();
+        let mut spawns = vec![];
+        let mut deaths = vec![];
+
+        for idx in 0..self.cells.len() {
+            let cell = &mut self.cells[idx];
+            match cell.state {
+                CellState::Empty => {
+                    cell.state = self.rule.apply_birth_rule(cell.neighbours);
+                    if cell.state == CellState::Alive {
+                        spawns.push(idx);
+                    }
+                }
+                CellState::Alive => {
+                    cell.state = self.rule.apply_survival_rule(cell.neighbours);
+                    if cell.state != CellState::Alive {
+                        deaths.push(idx);
+                    }
+                }
+                CellState::Dying(state) => {
+                    cell.state = self.rule.apply_dying_rule(state);
+                }
+            }
+        }
+        for index in spawns {
+            self.update_neighbours(index, true);
+        }
+        for index in deaths {
+            self.update_neighbours(index, false);
+        }
     }
 
     pub fn idx_to_pos(&self, idx: usize) -> IVec3 {
@@ -139,7 +147,7 @@ mod tests {
         let grid = AutomatonGrid::new(5, Rule::default());
 
         assert_eq!(grid.wrap(IVec3::new(-1, 1, 2)), IVec3::new(4, 1, 2));
-        assert_eq!(grid.wrap(IVec3::new(4, 4, 4)), IVec3::new(4, 4, 4));
+        assert_eq!(grid.wrap(IVec3::new(4, 4, 5)), IVec3::new(4, 4, 0));
         assert_eq!(grid.wrap(IVec3::new(4, 1, 1)), IVec3::new(4, 1, 1));
     }
 }
