@@ -1,4 +1,5 @@
 use crate::cell::{Cell, CellState};
+use crate::color::ColorMethod;
 use crate::rule::Rule;
 use bevy::math::IVec3;
 use bevy::prelude::*;
@@ -9,12 +10,28 @@ pub struct AutomatonGrid {
     pub size: usize,
     pub cells: Vec<Cell>,
     pub rule: Rule,
+    pub color_method: ColorMethod,
+    pub color_1: Color,
+    pub color_2: Color,
 }
 
 impl AutomatonGrid {
-    pub fn new(size: usize, rule: Rule) -> Self {
+    pub fn new(
+        size: usize,
+        rule: Rule,
+        color_method: ColorMethod,
+        color_1: Color,
+        color_2: Color,
+    ) -> Self {
         let cells = vec![Cell::default(); size.pow(3) as usize];
-        let mut grid = Self { size, cells, rule };
+        let mut grid = Self {
+            size,
+            cells,
+            rule,
+            color_method,
+            color_1,
+            color_2,
+        };
         // TODO: update this
         grid.spawn_noise();
         grid
@@ -116,6 +133,20 @@ impl AutomatonGrid {
         let bounds = self.size as i32;
         (pos + bounds) % bounds
     }
+
+    pub fn get_color_by_idx(&self, idx: usize) -> Color {
+        let cell_pos_centered = self.idx_to_pos(idx) - self.center();
+        let dist_to_center = cell_pos_centered.as_vec3().length() / (self.size as f32 / 2.0);
+        
+        self.color_method.get_color(
+            self.color_1,
+            self.color_2,
+            self.rule.states,
+            self.cells[idx].get_value(self.rule.states),
+            self.cells[idx].neighbours,
+            dist_to_center,
+        )
+    }
 }
 
 #[cfg(test)]
@@ -124,7 +155,13 @@ mod tests {
 
     #[test]
     fn grid_idx_to_pos() {
-        let grid = AutomatonGrid::new(5, Rule::default());
+        let grid = AutomatonGrid::new(
+            5,
+            Rule::default(),
+            ColorMethod::default(),
+            Color::default(),
+            Color::default(),
+        );
 
         assert_eq!(grid.idx_to_pos(0), IVec3::new(0, 0, 0));
         assert_eq!(grid.idx_to_pos(10), IVec3::new(0, 2, 0));
@@ -134,7 +171,13 @@ mod tests {
 
     #[test]
     fn grid_pos_to_idx() {
-        let grid = AutomatonGrid::new(5, Rule::default());
+        let grid = AutomatonGrid::new(
+            5,
+            Rule::default(),
+            ColorMethod::default(),
+            Color::default(),
+            Color::default(),
+        );
 
         assert_eq!(grid.pos_to_idx(IVec3::new(0, 0, 0)), 0);
         assert_eq!(grid.pos_to_idx(IVec3::new(0, 2, 0)), 10);
@@ -144,7 +187,13 @@ mod tests {
 
     #[test]
     fn wrap() {
-        let grid = AutomatonGrid::new(5, Rule::default());
+        let grid = AutomatonGrid::new(
+            5,
+            Rule::default(),
+            ColorMethod::default(),
+            Color::default(),
+            Color::default(),
+        );
 
         assert_eq!(grid.wrap(IVec3::new(-1, 1, 2)), IVec3::new(4, 1, 2));
         assert_eq!(grid.wrap(IVec3::new(4, 4, 5)), IVec3::new(4, 4, 0));
