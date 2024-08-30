@@ -19,6 +19,14 @@ impl Cell {
             self.neighbours -= 1;
         }
     }
+    pub fn get_value(&self, total_states: u8) -> u8 {
+        match self.state {
+            CellState::Empty => 0,
+            CellState::Alive => total_states - 1,
+            CellState::Dying(state) => state,
+        }
+
+    }
 }
 impl Default for Cell {
     fn default() -> Self {
