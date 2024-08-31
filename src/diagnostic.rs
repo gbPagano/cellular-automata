@@ -11,7 +11,7 @@ impl Plugin for DiagnosticPlugin {
             ScreenDiagnosticsPlugin::default(),
             ScreenFrameDiagnosticsPlugin,
         ))
-        .add_systems(Startup, toggle) // starts disabled
+        .add_systems(PostStartup, toggle) // starts disabled
         .add_systems(Update, update);
     }
 }
