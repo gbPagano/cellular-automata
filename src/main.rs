@@ -8,6 +8,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 use color::ColorMethod;
+use std::time::Duration;
 
 mod automaton_grid;
 mod camera;
@@ -46,7 +47,8 @@ fn main() {
             Srgba::rgb(1., 0., 0.).into(),
             //Srgba::rgb(0., 0., 1.).into(),
         ))
-        .add_systems(Update, update_automaton_grid)
+        .add_systems(FixedUpdate, update_automaton_grid)
+        .insert_resource(Time::<Fixed>::from_duration(Duration::from_millis(20)))
         .run();
 }
 
