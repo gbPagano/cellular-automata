@@ -1,31 +1,27 @@
 use crate::automaton_grid::AutomatonGrid;
 use crate::camera::CameraPlugin;
-use crate::cell::{Cell, CellState};
+use crate::cell::CellState;
+use crate::color::ColorMethod;
+use crate::diagnostic::DiagnosticPlugin;
 use crate::instancing::CellMaterialPlugin;
 use crate::instancing::{InstanceData, InstanceMaterialData};
 use crate::rule::{Indexes, NeighbourMethod, Rule};
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
-use color::ColorMethod;
 use std::time::Duration;
 
 mod automaton_grid;
 mod camera;
 mod cell;
 mod color;
+mod diagnostic;
 mod instancing;
 mod rule;
 
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, CellMaterialPlugin))
-        .add_plugins((
-            ScreenDiagnosticsPlugin::default(),
-            ScreenFrameDiagnosticsPlugin,
-        ))
-        //.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()))
         .add_plugins(CameraPlugin)
+        .add_plugins(DiagnosticPlugin)
         .insert_resource(ClearColor(Color::rgb(0.65f32, 0.9f32, 0.96f32)))
         .insert_resource(AutomatonGrid::new(
             64,
