@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ColorMethod {
-    StateLerp,
     DistToCenter,
+    StateLerp,
     Neighbour,
 }
 impl Default for ColorMethod {
@@ -19,6 +19,7 @@ impl ColorMethod {
         max_state: u8,
         state: u8,
         neighbours: u8,
+        max_neighbours: u8,
         dist_to_center: f32,
     ) -> Color {
         match self {
@@ -26,11 +27,9 @@ impl ColorMethod {
                 let dt = state as f32 / (max_state - 1) as f32;
                 lerp_color(color_1, color_2, dt)
             }
-            ColorMethod::DistToCenter => {
-                lerp_color(color_1, color_2, dist_to_center)
-            }
+            ColorMethod::DistToCenter => lerp_color(color_1, color_2, dist_to_center),
             ColorMethod::Neighbour => {
-                let dt = neighbours as f32 / 26f32;
+                let dt = neighbours as f32 / max_neighbours as f32;
                 lerp_color(color_1, color_2, dt)
             }
         }
