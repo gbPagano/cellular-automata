@@ -1,11 +1,14 @@
-use crate::automaton_grid::AutomatonGrid;
-use crate::camera::CameraPlugin;
-use crate::cell::CellState;
-use crate::color::ColorMethod;
-use crate::diagnostic::DiagnosticPlugin;
-use crate::instancing::CellMaterialPlugin;
-use crate::instancing::{InstanceData, InstanceMaterialData};
-use crate::rule::{Indexes, NeighbourMethod, Rule};
+use crate::{
+    automaton_grid::AutomatonGrid,
+    camera::CameraPlugin,
+    cell::CellState,
+    color::ColorMethod,
+    diagnostic::DiagnosticPlugin,
+    instancing::CellMaterialPlugin,
+    instancing::{InstanceData, InstanceMaterialData},
+    rule::{Indexes, NeighbourMethod, Rule},
+    ui::UiPlugin,
+};
 use bevy::prelude::*;
 use std::time::Duration;
 
@@ -16,13 +19,15 @@ mod color;
 mod diagnostic;
 mod instancing;
 mod rule;
+mod ui;
 
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, CellMaterialPlugin))
         .add_plugins(CameraPlugin)
         .add_plugins(DiagnosticPlugin)
-        .insert_resource(ClearColor(Color::rgb(0.65f32, 0.9f32, 0.96f32)))
+        .add_plugins(UiPlugin)
+        .insert_resource(ClearColor(Color::srgb(0.65f32, 0.9f32, 0.96f32)))
         .insert_resource(AutomatonGrid::new(
             64,
             Rule {
@@ -66,7 +71,7 @@ fn update_automaton_grid(
         instance_data.push(InstanceData {
             position: (pos - grid_center).as_vec3(),
             scale: 1.0,
-            color: color.to_linear().to_vec4().into(),
+            color: color.to_srgba().to_vec4().into(),
         });
     }
 }

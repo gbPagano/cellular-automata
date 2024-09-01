@@ -36,6 +36,18 @@ impl AutomatonGrid {
         grid.spawn_noise();
         grid
     }
+    
+    pub fn reset(&mut self) {
+        self.cells = vec![Cell::default(); self.size.pow(3) as usize];
+        self.spawn_noise();
+    }
+    
+    pub fn set_size(&mut self, new_size: usize) {
+        if self.size != new_size {
+            self.size = new_size;
+            self.reset();
+        }
+    }
 
     pub fn center(&self) -> IVec3 {
         let half_size = self.size as i32 / 2;
@@ -84,8 +96,7 @@ impl AutomatonGrid {
         let mut spawns = vec![];
         let mut deaths = vec![];
 
-        for idx in 0..self.cells.len() {
-            let cell = &mut self.cells[idx];
+        for (idx, cell) in self.cells.iter_mut().enumerate() {
             match cell.state {
                 CellState::Empty => {
                     cell.state = self.rule.apply_birth_rule(cell.neighbours);
@@ -137,13 +148,14 @@ impl AutomatonGrid {
     pub fn get_color_by_idx(&self, idx: usize) -> Color {
         let cell_pos_centered = self.idx_to_pos(idx) - self.center();
         let dist_to_center = cell_pos_centered.as_vec3().length() / (self.size as f32 / 2.0);
-        
+
         self.color_method.get_color(
             self.color_1,
             self.color_2,
             self.rule.states,
             self.cells[idx].get_value(self.rule.states),
             self.cells[idx].neighbours,
+            self.rule.get_max_neighbours(),
             dist_to_center,
         )
     }
