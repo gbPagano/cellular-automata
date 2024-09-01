@@ -14,6 +14,13 @@ impl Rule {
         self.neighbour_method.get_iter()
     }
 
+    pub fn get_max_neighbours(&self) -> u8 {
+        match self.neighbour_method {
+            NeighbourMethod::Moore => MOORE_NEIGHBOURS.len() as u8,
+            NeighbourMethod::VonNeumann => VONNEUMAN_NEIGHBOURS.len() as u8,
+        }
+    }
+
     pub fn apply_birth_rule(&self, neighbors: u8) -> CellState {
         if self.birth_rule.has(neighbors) {
             CellState::Alive
@@ -25,9 +32,9 @@ impl Rule {
     pub fn apply_survival_rule(&self, neighbors: u8) -> CellState {
         if !self.survival_rule.has(neighbors) {
             // eg. if cells has 5 states
-            // empty -> state 0 
-            // dying -> state 1,2,3 
-            // alive -> state 4 
+            // empty -> state 0
+            // dying -> state 1,2,3
+            // alive -> state 4
             CellState::Dying(self.states - 2)
         } else {
             CellState::Alive
@@ -46,14 +53,14 @@ impl Default for Rule {
     fn default() -> Self {
         Self {
             survival_rule: Indexes::new(&[2, 6, 9]),
-            birth_rule: Indexes::new(&[4, 6, 8, 9, 10]),
+            birth_rule: Indexes::new(&[4, 6, 8, 9, 11]),
             states: 10,
             neighbour_method: NeighbourMethod::Moore,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Indexes([bool; 27]);
 impl Indexes {
     pub fn new(indexes: &[u8]) -> Self {
@@ -74,9 +81,55 @@ impl Indexes {
         assert!(idx <= 26);
         self.0[idx as usize]
     }
+    pub fn parse_str(s: &str) -> Option<Self> {
+        if s.len() == 0 {
+            return Some(Indexes::default());
+        }
+        let mut res = Indexes::default();
+        for value in s.split(",") {
+            let value = value.trim();
+            if let Some((start, end)) = value.split_once('-') {
+                let start: usize = start.trim().parse().ok()?;
+                let end: usize = end.trim().parse().ok()?;
+                for idx in start..=end {
+                    *res.0.get_mut(idx)? = true;
+                }
+            } else {
+                let idx: usize = value.parse().ok()?;
+                *res.0.get_mut(idx)? = true;
+            }
+        }
+        Some(res)
+    }
 }
 
-#[derive(Debug, Clone, Copy)]
+impl ToString for Indexes {
+    fn to_string(&self) -> String {
+        let mut result = String::new();
+        let mut start = 0;
+        while start <= 26 {
+            if self.0[start] {
+                let mut end = start;
+                while end < 26 && self.0[end + 1] {
+                    end += 1;
+                }
+                if start == end {
+                    result.push_str(&format!("{},", start));
+                } else if start + 1 == end {
+                    result.push_str(&format!("{},{},", start, end));
+                } else {
+                    result.push_str(&format!("{}-{},", start, end));
+                }
+                start += (end - start) + 1;
+            } else {
+                start += 1;
+            }
+        }
+        result.trim_end_matches(',').to_string()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NeighbourMethod {
     Moore,
     VonNeumann,
@@ -170,7 +223,10 @@ mod tests {
     fn survival_rule() {
         let rule = Rule::default();
 
-        assert_eq!(rule.apply_survival_rule(0), CellState::Dying(rule.states - 2));
+        assert_eq!(
+            rule.apply_survival_rule(0),
+            CellState::Dying(rule.states - 2)
+        );
         assert_eq!(rule.apply_survival_rule(2), CellState::Alive);
     }
 
@@ -180,5 +236,25 @@ mod tests {
 
         assert_eq!(rule.apply_dying_rule(1), CellState::Empty);
         assert_eq!(rule.apply_dying_rule(3), CellState::Dying(2));
+    }
+
+    #[test]
+    fn indexes_to_string() {
+        let indexes = Indexes::new(&[1, 2, 4, 5, 6, 7, 15]);
+        assert_eq!(indexes.to_string(), "1,2,4-7,15".to_string());
+
+        let indexes = Indexes::from_range(9..=26);
+        assert_eq!(indexes.to_string(), "9-26".to_string());
+    }
+
+    #[test]
+    fn indexes_from_str() {
+        let inputs = "1,2,4-7,15";
+        let indexes = Indexes::new(&[1, 2, 4, 5, 6, 7, 15]);
+        assert_eq!(Indexes::parse_str(&inputs), Some(indexes));
+
+        let inputs = "9-26";
+        let indexes = Indexes::from_range(9..=26);
+        assert_eq!(Indexes::parse_str(&inputs), Some(indexes));
     }
 }
