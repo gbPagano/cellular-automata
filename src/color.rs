@@ -1,17 +1,14 @@
 use bevy::prelude::*;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub enum ColorMethod {
+    #[default]
     DistToCenter,
     StateLerp,
     Neighbour,
 }
-impl Default for ColorMethod {
-    fn default() -> Self {
-        ColorMethod::DistToCenter
-    }
-}
 impl ColorMethod {
+    #[allow(clippy::too_many_arguments)]
     pub fn get_color(
         &self,
         color_1: Color,

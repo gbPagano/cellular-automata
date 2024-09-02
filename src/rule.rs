@@ -1,4 +1,4 @@
-use crate::cell::{Cell, CellState};
+use crate::cell::CellState;
 use bevy::math::IVec3;
 use std::ops::RangeInclusive;
 
@@ -82,7 +82,7 @@ impl Indexes {
         self.0[idx as usize]
     }
     pub fn parse_str(s: &str) -> Option<Self> {
-        if s.len() == 0 {
+        if s.is_empty() {
             return Some(Indexes::default());
         }
         let mut res = Indexes::default();
@@ -103,6 +103,7 @@ impl Indexes {
     }
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for Indexes {
     fn to_string(&self) -> String {
         let mut result = String::new();
