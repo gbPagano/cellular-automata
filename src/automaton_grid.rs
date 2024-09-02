@@ -1,9 +1,10 @@
 use crate::cell::{Cell, CellState};
 use crate::color::ColorMethod;
-use crate::rule::Rule;
+use crate::rule::{Indexes, NeighbourMethod, Rule};
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use rand::Rng;
+use std::fmt::Display;
 
 #[derive(Resource, Debug)]
 pub struct AutomatonGrid {
@@ -23,7 +24,7 @@ impl AutomatonGrid {
         color_1: Color,
         color_2: Color,
     ) -> Self {
-        let cells = vec![Cell::default(); size.pow(3) as usize];
+        let cells = vec![Cell::default(); size.pow(3)];
         let mut grid = Self {
             size,
             cells,
@@ -32,16 +33,15 @@ impl AutomatonGrid {
             color_1,
             color_2,
         };
-        // TODO: update this
         grid.spawn_noise();
         grid
     }
-    
+
     pub fn reset(&mut self) {
-        self.cells = vec![Cell::default(); self.size.pow(3) as usize];
+        self.cells = vec![Cell::default(); self.size.pow(3)];
         self.spawn_noise();
     }
-    
+
     pub fn set_size(&mut self, new_size: usize) {
         if self.size != new_size {
             self.size = new_size;
@@ -57,9 +57,8 @@ impl AutomatonGrid {
     fn spawn_noise(&mut self) {
         let center = self.center();
 
-        // TODO: check this values
-        let amount = 12 * 12 * 12;
         let radius = 6;
+        let amount = (radius as usize * 2).pow(3);
 
         let mut rand = rand::thread_rng();
         for _ in 0..amount {
@@ -159,6 +158,52 @@ impl AutomatonGrid {
             dist_to_center,
         )
     }
+
+    pub fn set_example(&mut self, example: Example) {
+        self.rule = example.rule;
+        self.color_method = example.color_method;
+        self.color_1 = example.color_1;
+        self.color_2 = example.color_2;
+        self.reset();
+    }
+}
+impl Default for AutomatonGrid {
+    fn default() -> Self {
+        Self::new(
+            64,
+            Rule {
+                survival_rule: Indexes::new(&[2, 6, 9]),
+                birth_rule: Indexes::new(&[4, 6, 8, 9, 10]),
+                states: 10,
+                neighbour_method: NeighbourMethod::Moore,
+            },
+            ColorMethod::DistToCenter,
+            Srgba::rgb(1., 1., 0.).into(),
+            Srgba::rgb(1., 0., 0.).into(),
+        )
+    }
+}
+
+#[derive(Resource, Debug, Default)]
+pub struct Examples(pub Vec<Example>);
+impl Examples {
+    pub fn add(&mut self, example: Example) {
+        self.0.push(example);
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Example {
+    pub name: String,
+    pub rule: Rule,
+    pub color_method: ColorMethod,
+    pub color_1: Color,
+    pub color_2: Color,
+}
+impl Display for Example {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 #[cfg(test)]
@@ -167,13 +212,8 @@ mod tests {
 
     #[test]
     fn grid_idx_to_pos() {
-        let grid = AutomatonGrid::new(
-            5,
-            Rule::default(),
-            ColorMethod::default(),
-            Color::default(),
-            Color::default(),
-        );
+        let mut grid = AutomatonGrid::default();
+        grid.set_size(5);
 
         assert_eq!(grid.idx_to_pos(0), IVec3::new(0, 0, 0));
         assert_eq!(grid.idx_to_pos(10), IVec3::new(0, 2, 0));
@@ -183,13 +223,8 @@ mod tests {
 
     #[test]
     fn grid_pos_to_idx() {
-        let grid = AutomatonGrid::new(
-            5,
-            Rule::default(),
-            ColorMethod::default(),
-            Color::default(),
-            Color::default(),
-        );
+        let mut grid = AutomatonGrid::default();
+        grid.set_size(5);
 
         assert_eq!(grid.pos_to_idx(IVec3::new(0, 0, 0)), 0);
         assert_eq!(grid.pos_to_idx(IVec3::new(0, 2, 0)), 10);
@@ -199,13 +234,8 @@ mod tests {
 
     #[test]
     fn wrap() {
-        let grid = AutomatonGrid::new(
-            5,
-            Rule::default(),
-            ColorMethod::default(),
-            Color::default(),
-            Color::default(),
-        );
+        let mut grid = AutomatonGrid::default();
+        grid.set_size(5);
 
         assert_eq!(grid.wrap(IVec3::new(-1, 1, 2)), IVec3::new(4, 1, 2));
         assert_eq!(grid.wrap(IVec3::new(4, 4, 5)), IVec3::new(4, 4, 0));
