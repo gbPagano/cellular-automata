@@ -57,7 +57,7 @@ fn ui_system(
             grid.set_size(size);
 
             let mut millis = update_time.timestep().as_millis() as usize;
-            ui.add(egui::Slider::new(&mut millis, 5..=50).text("Step (milliseconds)"));
+            ui.add(egui::Slider::new(&mut millis, 10..=50).text("Step (milliseconds)"));
             update_time.set_timestep(Duration::from_millis(millis as u64));
 
             ui.add_space(24.0);
@@ -133,14 +133,11 @@ fn ui_system(
             for idx in (0..examples.0.len()).step_by(step) {
                 ui.horizontal(|ui| {
                     for s in 0..step {
-
-
-                    if let Some(example) = examples.0.get(idx + s) {
-                        if ui.button(&example.name).clicked() {
-                            grid.set_example(example.clone());
+                        if let Some(example) = examples.0.get(idx + s) {
+                            if ui.button(&example.name).clicked() {
+                                grid.set_example(example.clone());
+                            }
                         }
-                    }
-
                     }
                 });
             }

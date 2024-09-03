@@ -145,18 +145,7 @@ impl AutomatonGrid {
     }
 
     pub fn get_color_by_idx(&self, idx: usize) -> Color {
-        let cell_pos_centered = self.idx_to_pos(idx) - self.center();
-        let dist_to_center = cell_pos_centered.as_vec3().length() / (self.size as f32 / 2.0);
-
-        self.color_method.get_color(
-            self.color_1,
-            self.color_2,
-            self.rule.states,
-            self.cells[idx].get_value(self.rule.states),
-            self.cells[idx].neighbours,
-            self.rule.get_max_neighbours(),
-            dist_to_center,
-        )
+        self.color_method.get_color(&self, idx)
     }
 
     pub fn set_example(&mut self, example: Example) {
