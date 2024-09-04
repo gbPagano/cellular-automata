@@ -145,7 +145,7 @@ impl AutomatonGrid {
     }
 
     pub fn get_color_by_idx(&self, idx: usize) -> Color {
-        self.color_method.get_color(&self, idx)
+        self.color_method.get_color(self, idx)
     }
 
     pub fn set_example(&mut self, example: Example) {

@@ -25,11 +25,20 @@ mod ui;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, CellMaterialPlugin))
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Cellular Automata".into(),
+                fit_canvas_to_parent: true,
+                window_theme: Some(bevy::window::WindowTheme::Dark),
+                ..default()
+            }),
+            ..default()
+        }))
+        .add_plugins(CellMaterialPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(DiagnosticPlugin)
         .add_plugins(UiPlugin)
-        .insert_resource(ClearColor(Color::srgb(30./255., 30./255., 46./255.)))
+        .insert_resource(ClearColor(Color::srgb(30. / 255., 30. / 255., 46. / 255.)))
         .insert_resource(AutomatonGrid::default())
         .insert_resource(Examples::default())
         .add_systems(Startup, add_examples)
@@ -202,7 +211,6 @@ fn add_examples(mut examples: ResMut<Examples>) {
         color_2: RED.into(),
     });
     examples.add(Example {
-
         name: "445".to_string(),
         rule: Rule {
             survival_rule: Indexes::parse_str("4").unwrap(),
