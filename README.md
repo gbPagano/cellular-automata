@@ -5,9 +5,10 @@ automata are systems where cells evolve over discrete time steps based on the st
 neighboring cells. By extending CA into three dimensions, this project offers dynamic 
 and visually engaging simulations.
 
+https://github.com/user-attachments/assets/b93fdb0c-372c-4d9a-a716-b73793113dfe
+
 This project was inspired by and based on the article "3D Cellular Automata" by Jason Rampe. 
 You can read the original article [here](https://softologyblog.wordpress.com/2019/12/28/3d-cellular-automata-3/).
-
 
 ## Neighborhoods
 
