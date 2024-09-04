@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Cellular Automata</title>
+    <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Remove scrollbars */
+      height: 100%;
+    }
+    canvas {
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    </style>
+  </head>
+  <body style="margin: 0px;">
+    <script type="module">
+    import init from './cellular-automata.js'
+
+    init().catch((error) => {
+      if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
+        throw error;
+      }
+    });
+    </script>
+  </body>
+</html>
